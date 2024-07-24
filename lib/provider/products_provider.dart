@@ -6,19 +6,21 @@ import 'package:shop/models/product.dart';
 class ProductProvider with ChangeNotifier {
   List<Product> _products = [];
 
-  List<Product> get products => _products;
+  List<Product> get products {
+    return [..._products];
+  }
 
   Future<void> fetchProducts() async {
-    const url = 'https://run.mocky.io/v3/72d2b42e-4c84-46d9-b404-fa05a5d181ad'; // Substitua pela URL do seu servidor
+    const url = 'http://45.174.192.150:3000/api/products';
     try {
       final response = await http.get(Uri.parse(url));
-      if (response.statusCode == 200) {
-        final List<dynamic> data = json.decode(response.body);
-        _products = data.map((item) => Product.fromJson(item)).toList();
-        notifyListeners();
-      } else {
-        throw Exception('Failed to load products');
+      final extractedData = json.decode(response.body) as List<dynamic>;
+      final List<Product> loadedProducts = [];
+      for (var productData in extractedData) {
+        loadedProducts.add(Product.fromJson(productData));
       }
+      _products = loadedProducts;
+      notifyListeners();
     } catch (error) {
       rethrow;
     }

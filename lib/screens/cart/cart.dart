@@ -1,155 +1,14 @@
+import 'package:flutter/foundation.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shop/provider/cart_provider.dart';
-import 'package:shop/provider/order_provider.dart';
+import 'package:shop/screens/checkout/checout.dart';
 
 class CartScreen extends StatelessWidget {
   static const routeName = '/cart';
 
   const CartScreen({super.key});
-
-  Future<void> _showCheckoutDialog(BuildContext context, CartProvider cart) async {
-    final formKey = GlobalKey<FormState>();
-    final Map<String, String> checkoutData = {
-      'name': '',
-      'address': '',
-      'payment': '',
-    };
-
-    String paymentMethod = 'Dinheiro'; // Método de pagamento padrão
-
-    return showDialog(
-      context: context,
-      builder: (ctx) => StatefulBuilder(
-        builder: (ctx, setState) => AlertDialog(
-          title: const Text('Finalizar Compra'),
-          content: Form(
-            key: formKey,
-            child: SingleChildScrollView(
-              child: Column(
-                children: [
-                  TextFormField(
-                    decoration: const InputDecoration(labelText: 'Nome Completo'),
-                    onSaved: (value) {
-                      checkoutData['name'] = value ?? '';
-                    },
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Por favor, insira seu nome.';
-                      }
-                      return null;
-                    },
-                  ),
-                  TextFormField(
-                    decoration: const InputDecoration(labelText: 'Endereço'),
-                    onSaved: (value) {
-                      checkoutData['address'] = value ?? '';
-                    },
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Por favor, insira seu endereço.';
-                      }
-                      return null;
-                    },
-                  ),
-                  DropdownButtonFormField<String>(
-                    decoration: const InputDecoration(labelText: 'Método de Pagamento'),
-                    value: paymentMethod,
-                    items: ['Dinheiro', 'Cartão', 'Pix', 'Boleto']
-                        .map((method) => DropdownMenuItem(
-                              value: method,
-                              child: Text(method),
-                            ))
-                        .toList(),
-                    onChanged: (value) {
-                      setState(() {
-                        paymentMethod = value!;
-                      });
-                    },
-                    onSaved: (value) {
-                      checkoutData['payment'] = value ?? '';
-                    },
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Por favor, selecione um método de pagamento.';
-                      }
-                      return null;
-                    },
-                  ),
-                  if (paymentMethod == 'Cartão')
-                    TextFormField(
-                      decoration: const InputDecoration(labelText: 'Número do Cartão'),
-                      onSaved: (value) {
-                        checkoutData['cardNumber'] = value ?? '';
-                      },
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Por favor, insira o número do cartão.';
-                        }
-                        return null;
-                      },
-                    ),
-                  if (paymentMethod == 'Pix')
-                    TextFormField(
-                      decoration: const InputDecoration(labelText: 'Chave Pix'),
-                      onSaved: (value) {
-                        checkoutData['pixKey'] = value ?? '';
-                      },
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Por favor, insira a chave Pix.';
-                        }
-                        return null;
-                      },
-                    ),
-                  if (paymentMethod == 'Boleto')
-                    Text(
-                      'O boleto será gerado e enviado para o seu e-mail.',
-                      style: TextStyle(color: Colors.grey[600]),
-                    ),
-                ],
-              ),
-            ),
-          ),
-          actions: [
-            TextButton(
-              child: const Text('CANCELAR'),
-              onPressed: () {
-                Navigator.of(ctx).pop();
-              },
-            ),
-            ElevatedButton(
-              child: const Text('FINALIZAR'),
-              onPressed: () {
-                if (formKey.currentState!.validate()) {
-                  formKey.currentState!.save();
-                  Provider.of<OrderProvider>(context, listen: false).addOrder(
-                    Order(
-                      id: DateTime.now().toString(),
-                      customerName: checkoutData['name']!,
-                      address: checkoutData['address']!,
-                      paymentMethod: checkoutData['payment']!,
-                      amount: cart.totalAmount,
-                      date: DateTime.now(),
-                      items: cart.items,
-                    ),
-                  );
-                  cart.clear();
-                  Navigator.of(ctx).pop();
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Pedido realizado com sucesso!'),
-                    ),
-                  );
-                  Navigator.of(context).pushNamed('/order');
-                }
-              },
-            ),
-          ],
-        ),
-      ),
-    );
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -158,7 +17,7 @@ class CartScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Carrinho'),
+        title:  Text(AppLocalizations.of(context)!.shopCart),
       ),
       body: cartItems.isEmpty
           ? const Center(
@@ -169,28 +28,52 @@ class CartScreen extends StatelessWidget {
                 Expanded(
                   child: ListView.builder(
                     itemCount: cartItems.length,
-                    itemBuilder: (ctx, index) => ListTile(
-                      leading: CircleAvatar(
-                        child: Padding(
-                          padding: const EdgeInsets.all(5),
-                          child: FittedBox(
-                            child: Text('${cartItems[index].quantity}x'),
+                    itemBuilder: (ctx, index) => Card(
+                      margin: const EdgeInsets.symmetric(
+                          vertical: 8, horizontal: 15),
+                      child: ListTile(
+                        leading: CircleAvatar(
+                          backgroundColor: Colors.transparent,
+                          child: ClipOval(
+                            child: cartItems[index].imageUrl !=
+                                    'https://via.placeholder.com/150'
+                                ? Image.network(
+                                    cartItems[index].imageUrl,
+                                    fit: BoxFit.cover,
+                                    width: 50,
+                                    height: 50,
+                                    errorBuilder: (ctx, error, stackTrace) {
+                                      if (kDebugMode) {
+                                        print('Error loading image: $error');
+                                      }
+                                      return const Icon(Icons.error,
+                                          color: Colors.red);
+                                    },
+                                  )
+                                : Icon(Icons.image, color: Colors.grey[600]),
                           ),
                         ),
-                      ),
-                      title: Text(cartItems[index].title),
-                      subtitle: Text('R\$ ${cartItems[index].price}'),
-                      trailing: IconButton(
-                        icon: const Icon(Icons.delete),
-                        onPressed: () {
-                          cart.removeItem(cartItems[index].productId);
-                        },
+                        title: Text(cartItems[index].title),
+                        subtitle: Text('R\$ ${cartItems[index].price}'),
+                        trailing: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: <Widget>[
+                            Text('${cartItems[index].quantity}x'),
+                            IconButton(
+                              icon: const Icon(Icons.delete),
+                              onPressed: () {
+                                cart.removeItem(cartItems[index].productId);
+                              },
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                   ),
                 ),
                 const SizedBox(height: 10),
                 Card(
+                  clipBehavior: Clip.hardEdge,
                   margin: const EdgeInsets.symmetric(horizontal: 15),
                   child: Padding(
                     padding: const EdgeInsets.all(8),
@@ -201,12 +84,14 @@ class CartScreen extends StatelessWidget {
                           'Total',
                           style: TextStyle(fontSize: 20),
                         ),
-                        const Spacer(),
                         Chip(
                           label: Text(
                             'R\$ ${cart.totalAmount.toStringAsFixed(2)}',
                             style: TextStyle(
-                              color: Theme.of(context).primaryTextTheme.headlineLarge!.color,
+                              color: Theme.of(context)
+                                  .primaryTextTheme
+                                  .bodyMedium!
+                                  .color,
                             ),
                           ),
                           backgroundColor: Theme.of(context).primaryColor,
@@ -214,7 +99,8 @@ class CartScreen extends StatelessWidget {
                         TextButton(
                           child: const Text('COMPRAR AGORA'),
                           onPressed: () {
-                            _showCheckoutDialog(context, cart);
+                            Navigator.of(context)
+                                .pushNamed(CheckoutScreen.routeName);
                           },
                         ),
                       ],

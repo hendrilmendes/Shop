@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
 import 'package:shop/provider/products_provider.dart';
-import 'package:shop/widgets/bottom_navigation.dart';
-import 'package:shop/widgets/product_item.dart';
+import 'package:shop/provider/category_provider.dart';
+import 'package:shop/widgets/items/product_item.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -13,24 +14,34 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  var _isLoading = false;
+  var _isLoading = true;
   var _searchQuery = '';
   var _selectedCategory = 'Todos';
-  int _selectedIndex = 0;
+  List<String> _categories = [];
 
   @override
   void initState() {
     super.initState();
-    Provider.of<ProductProvider>(context, listen: false).fetchProducts();
+    _fetchData();
   }
 
-  Future<void> fetchProducts() async {
+  Future<void> _fetchData() async {
     setState(() {
       _isLoading = true;
     });
     try {
       await Provider.of<ProductProvider>(context, listen: false)
           .fetchProducts();
+      // ignore: use_build_context_synchronously
+      await Provider.of<CategoryProvider>(context, listen: false)
+          .fetchCategories();
+      setState(() {
+        _categories =
+            Provider.of<CategoryProvider>(context, listen: false).categories;
+        if (!_categories.contains(_selectedCategory)) {
+          _selectedCategory = 'Todos';
+        }
+      });
     } catch (error) {
       // Handle error
     } finally {
@@ -40,49 +51,18 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-  void _onItemTapped(int index) {
-    setState(() {
-      _selectedIndex = index;
-    });
-    switch (_selectedIndex) {
-      case 0:
-        // Navegar para a tela inicial
-        Navigator.of(context).pushReplacementNamed('/');
-        break;
-      case 1:
-        // Navegar para a tela de pedidos
-        Navigator.pushNamed(context, '/order');
-        break;
-      case 2:
-         // Navegar para a tela de pedidos
-        break;
-      case 3:
-        // Navegar para a tela de configurações
-        // Implemente a navegação para a tela de configurações
-        break;
-      default:
-        break;
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('ShopTem'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.shopping_cart),
-            onPressed: () {
-              Navigator.pushNamed(context, '/cart');
-            },
-          ),
-        ],
+        title: Text(AppLocalizations.of(context)!.appName),
         bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(108.0),
+          preferredSize: const Size.fromHeight(110.0),
           child: Column(
             children: [
               Card(
+                clipBehavior: Clip.hardEdge,
+                color: Theme.of(context).listTileTheme.tileColor,
                 margin: const EdgeInsets.all(8.0),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(20.0),
@@ -90,11 +70,11 @@ class _HomeScreenState extends State<HomeScreen> {
                 child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16.0),
                   child: TextField(
-                    decoration: const InputDecoration(
-                      hintText: 'Pesquisar...',
+                    decoration: InputDecoration(
+                      hintText: AppLocalizations.of(context)!.searchFor,
                       border: InputBorder.none,
-                      contentPadding:
-                          EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                      contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 20, vertical: 10),
                     ),
                     onChanged: (value) {
                       setState(() {
@@ -108,32 +88,31 @@ class _HomeScreenState extends State<HomeScreen> {
               SingleChildScrollView(
                 scrollDirection: Axis.horizontal,
                 child: Row(
-                  children:
-                      ['Todos', 'Camisetas', 'Calças', 'Acessórios', 'Calçados','Perfumes']
-                          .map((category) => Padding(
-                                padding:
-                                    const EdgeInsets.symmetric(horizontal: 8.0),
-                                child: ChoiceChip(
-                                  label: Text(category),
-                                  selected: _selectedCategory == category,
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(20),
-                                  ),
-                                  backgroundColor: Colors.grey[200],
-                                  selectedColor: Colors.blue,
-                                  labelStyle: TextStyle(
-                                    color: _selectedCategory == category
-                                        ? Colors.white
-                                        : Colors.black,
-                                  ),
-                                  onSelected: (isSelected) {
-                                    setState(() {
-                                      _selectedCategory = category;
-                                    });
-                                  },
-                                ),
-                              ))
-                          .toList(),
+                  children: _categories
+                      .map((category) => Padding(
+                            padding:
+                                const EdgeInsets.symmetric(horizontal: 8.0),
+                            child: ChoiceChip(
+                              label: Text(category),
+                              selected: _selectedCategory == category,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(20),
+                              ),
+                              backgroundColor: Colors.grey[200],
+                              selectedColor: Colors.blue,
+                              labelStyle: TextStyle(
+                                color: _selectedCategory == category
+                                    ? Colors.white
+                                    : Colors.black,
+                              ),
+                              onSelected: (isSelected) {
+                                setState(() {
+                                  _selectedCategory = category;
+                                });
+                              },
+                            ),
+                          ))
+                      .toList(),
                 ),
               ),
             ],
@@ -161,22 +140,20 @@ class _HomeScreenState extends State<HomeScreen> {
                   itemBuilder: (ctx, i) => ProductItem(
                     id: products[i].id,
                     title: products[i].title,
-                    imageUrl: products[i].imageUrl,
+                    imageUrls: products[i].imageUrls,
                     price: products[i].price,
+                    isOutOfStock: products[i].isOutOfStock,
+                    discount: products[i].discount,
                   ),
                   gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                     crossAxisCount: 2,
-                    childAspectRatio: 3 / 2,
-                    crossAxisSpacing: 10,
-                    mainAxisSpacing: 10,
+                    childAspectRatio: 2 / 3,
+                    crossAxisSpacing: 20,
+                    mainAxisSpacing: 20,
                   ),
                 );
               },
             ),
-      bottomNavigationBar: BottomNavigationContainer(
-        currentIndex: _selectedIndex,
-        onTap: _onItemTapped,
-      ),
     );
   }
 }
