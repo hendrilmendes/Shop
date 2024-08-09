@@ -1,63 +1,68 @@
-import 'dart:convert';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:shop/widgets/items/cart_item.dart';
 
 class CartProvider with ChangeNotifier {
   List<CartItem> _items = [];
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+  bool _isLoading = false;
 
   List<CartItem> get items => [..._items];
+  bool get isLoading => _isLoading;
 
-  CartProvider() {
-    _loadCartItems(); // Carrega itens do carrinho ao iniciar o provider
+  Future<String?> _getUserId() async {
+    final user = _auth.currentUser;
+    if (user != null) {
+      return user.uid;
+    }
+    return null;
   }
 
-  Future<void> _loadCartItems() async {
-    final prefs = await SharedPreferences.getInstance();
-    final cartData = prefs.getString('cart') ?? '[]';
+  Future<void> loadCart() async {
+    _isLoading = true;
+    notifyListeners();
 
-    try {
-      final List<dynamic> decodedData = json.decode(cartData);
-      _items = decodedData
-          .map((item) => CartItem(
-                id: item['id'] ?? '',
-                productId: item['productId'] ?? '',
-                title: item['title'] ?? '',
-                quantity: item['quantity'] ?? 0,
-                price: item['price']?.toDouble() ?? 0.0,
-                imageUrl: item['imageUrl'] ??
-                    'https://via.placeholder.com/50', // Valor padrão para imagemUrl
-              ))
-          .toList();
-    } catch (e) {
-      // Se a decodificação falhar, exiba um erro ou defina `_items` como uma lista vazia.
+    final userId = await _getUserId();
+    if (userId == null) {
       _items = [];
-      if (kDebugMode) {
-        print('Erro ao carregar itens do carrinho: $e');
-      }
+      _isLoading = false;
+      notifyListeners();
+      return;
     }
 
+    final cartCollection = FirebaseFirestore.instance.collection('carts');
+    final docSnapshot = await cartCollection.doc(userId).get();
+    if (docSnapshot.exists) {
+      final data = docSnapshot.data()!;
+      _items = (data['items'] as List<dynamic>)
+          .map((item) => CartItem.fromJson(item))
+          .toList();
+    } else {
+      _items = [];
+    }
+
+    _isLoading = false;
     notifyListeners();
   }
 
   Future<void> _saveCartItems() async {
-    final prefs = await SharedPreferences.getInstance();
-    final cartData = json.encode(_items
-        .map((item) => {
-              'id': item.id,
-              'productId': item.productId,
-              'title': item.title,
-              'quantity': item.quantity,
-              'price': item.price,
-              'imageUrl': item.imageUrl,
-            })
-        .toList());
-    await prefs.setString('cart', cartData);
+    final userId = await _getUserId();
+    if (userId == null) {
+      return;
+    }
+
+    final cartCollection = FirebaseFirestore.instance.collection('carts');
+    final cartData = _items.map((item) => item.toJson()).toList();
+    await cartCollection.doc(userId).set({'items': cartData});
   }
 
-  void addItem(String productId, String title, double price, String? imageUrl) {
-    int existingIndex =
-        _items.indexWhere((item) => item.productId == productId);
+  void addItem(String productId, String title, double price, String? imageUrl,
+      String color, String size) {
+    int existingIndex = _items.indexWhere((item) =>
+        item.productId == productId &&
+        item.color == color &&
+        item.size == size);
 
     if (existingIndex != -1) {
       _items[existingIndex] = CartItem(
@@ -67,6 +72,8 @@ class CartProvider with ChangeNotifier {
         price: price,
         quantity: _items[existingIndex].quantity + 1,
         imageUrl: imageUrl ?? 'https://via.placeholder.com/50',
+        color: color,
+        size: size,
       );
     } else {
       _items.add(
@@ -77,17 +84,19 @@ class CartProvider with ChangeNotifier {
           price: price,
           quantity: 1,
           imageUrl: imageUrl ?? 'https://via.placeholder.com/50',
+          color: color,
+          size: size,
         ),
       );
     }
 
-    _saveCartItems(); // Salva o estado atualizado do carrinho
+    _saveCartItems();
     notifyListeners();
   }
 
   void removeFromCart(String productId) {
     _items.removeWhere((item) => item.productId == productId);
-    _saveCartItems(); // Salva o estado atualizado do carrinho
+    _saveCartItems();
     notifyListeners();
   }
 
@@ -101,13 +110,13 @@ class CartProvider with ChangeNotifier {
 
   void clear() {
     _items = [];
-    _saveCartItems(); // Salva o estado atualizado do carrinho
+    _saveCartItems();
     notifyListeners();
   }
 
   void removeItem(String productId) {
     _items.removeWhere((item) => item.productId == productId);
-    _saveCartItems(); // Salva o estado atualizado do carrinho
+    _saveCartItems();
     notifyListeners();
   }
 }

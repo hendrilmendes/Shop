@@ -1,9 +1,15 @@
 import 'package:feedback/feedback.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:flutter_stripe/flutter_stripe.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:provider/provider.dart';
+import 'package:shop/auth/auth.dart';
+import 'package:shop/firebase_options.dart';
 import 'package:shop/provider/cart_provider.dart';
 import 'package:shop/provider/category_provider.dart';
 import 'package:shop/provider/favorite_provider.dart';
@@ -12,6 +18,7 @@ import 'package:shop/provider/products_provider.dart';
 import 'package:shop/screens/cart/cart.dart';
 import 'package:shop/screens/checkout/checout.dart';
 import 'package:shop/screens/favorites/favorites.dart';
+import 'package:shop/screens/login/login.dart';
 import 'package:shop/screens/orders/orders.dart';
 import 'package:shop/screens/product_details/product_details.dart';
 import 'package:shop/screens/rotes/rotes.dart';
@@ -21,8 +28,15 @@ import 'package:shop/theme/theme.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
+
   await Hive.initFlutter();
   await Hive.openBox<Map<String, dynamic>>('favoritesbox');
+
+  Stripe.publishableKey =
+      'pk_test_51PhgcYRrdJeN8anlmmWdatIlC2hvlaCCgNpSlq1Xi5D2mLxhmHRX5WEDdbogI466W5UIT3Y7j17EaIf2zgiGUmbh009EK7XbDu';
 
   runApp(
     BetterFeedback(
@@ -38,6 +52,9 @@ Future<void> main() async {
       child: const MyApp(),
     ),
   );
+
+  // Firebase
+  FlutterError.onError = FirebaseCrashlytics.instance.recordFlutterFatalError;
 }
 
 ThemeMode _getThemeMode(ThemeModeType mode) {
@@ -56,7 +73,7 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    String userId = 'user123';
+    final AuthService authService = AuthService();
 
     return MultiProvider(
       providers: [
@@ -70,7 +87,7 @@ class MyApp extends StatelessWidget {
           create: (ctx) => CategoryProvider(),
         ),
         ChangeNotifierProvider(
-          create: (context) => OrderProvider(userId),
+          create: (context) => OrderProvider(),
         ),
         ChangeNotifierProvider(
           create: (context) => FavoritesProvider()..init(),
@@ -87,13 +104,32 @@ class MyApp extends StatelessWidget {
           debugShowCheckedModeBanner: false,
           localizationsDelegates: AppLocalizations.localizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
-          initialRoute: '/',
+          home: FutureBuilder(
+            future: authService.currentUser(),
+            builder: (context, AsyncSnapshot<User?> snapshot) {
+              if (snapshot.connectionState == ConnectionState.done) {
+                if (snapshot.hasData) {
+                  return const MainScreen();
+                } else {
+                  return LoginScreen(
+                    authService: authService,
+                  );
+                }
+              } else {
+                return const Scaffold(
+                  body: Center(
+                    child: CircularProgressIndicator.adaptive(),
+                  ),
+                );
+              }
+            },
+          ),
           routes: {
-            '/': (ctx) => const MainScreen(),
             '/order': (ctx) => const OrdersScreen(),
             '/cart': (ctx) => const CartScreen(),
             FavoritesScreen.routeName: (ctx) => const FavoritesScreen(),
-            '/settings': (ctx) => const SettingsScreen(),
+            '/settings': (ctx) => SettingsScreen(),
+            '/login': (context) => LoginScreen(authService: authService),
             ProductDetailScreen.routeName: (ctx) => const ProductDetailScreen(),
             CheckoutScreen.routeName: (ctx) => const CheckoutScreen(),
           },

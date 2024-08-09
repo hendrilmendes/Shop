@@ -113,7 +113,7 @@ class ThemeModel extends ChangeNotifier {
       bottomNavigationBarTheme: const BottomNavigationBarThemeData(
           backgroundColor: Colors.black, selectedItemColor: Colors.blue),
       cardTheme: const CardTheme(
-        color: Colors.black87,
+        color: Color.fromARGB(212, 23, 23, 23),
       ),
       inputDecorationTheme: const InputDecorationTheme(
         hintStyle: TextStyle(color: Colors.white),

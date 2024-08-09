@@ -21,7 +21,7 @@ class BottomNavigationContainer extends StatelessWidget {
       showUnselectedLabels: true,
       items: [
         BottomNavigationBarItem(
-          icon: const Icon(Icons.home),
+          icon: const Icon(Icons.home_filled),
           label: AppLocalizations.of(context)!.home,
         ),
         BottomNavigationBarItem(

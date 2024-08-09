@@ -1,8 +1,19 @@
+import 'dart:convert';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:fluttertoast/fluttertoast.dart';
+import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
+import 'package:pix_flutter/pix_flutter.dart';
 import 'package:provider/provider.dart';
 import 'package:shop/provider/cart_provider.dart';
-import 'package:shop/provider/order_provider.dart';
+import 'package:shop/provider/order_provider.dart' as shop;
+import 'package:shop/provider/stripe_provider.dart';
+import 'package:flutter/services.dart';
+import 'package:qr_flutter/qr_flutter.dart';
 
 class CheckoutScreen extends StatefulWidget {
   static const routeName = '/checkout';
@@ -16,21 +27,76 @@ class CheckoutScreen extends StatefulWidget {
 
 class _CheckoutScreenState extends State<CheckoutScreen> {
   final _formKey = GlobalKey<FormState>();
+  final TextEditingController _nameController = TextEditingController();
+  final TextEditingController _addressController = TextEditingController();
+  final TextEditingController _cpfController = TextEditingController();
+  final TextEditingController _emailController = TextEditingController();
   final Map<String, String> _checkoutData = {
     'name': '',
     'address': '',
+    'cpf': '',
+    'email': '',
     'payment': '',
     'cardNumber': '',
     'pixKey': '',
   };
 
-  String _paymentMethod = 'Dinheiro'; // Default payment method
+  String _paymentMethod = 'Cartão'; // Padrao
+  final stripePaymentHandle = StripePaymentHandle();
+  final User? user = FirebaseAuth.instance.currentUser;
+
+  bool _isPixGenerated = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchUserInfo();
+  }
+
+  Future<void> _fetchUserInfo() async {
+    if (user != null) {
+      try {
+        DocumentSnapshot userInfo = await FirebaseFirestore.instance
+            .collection('users')
+            .doc(user!.uid)
+            .get();
+
+        if (userInfo.exists) {
+          setState(() {
+            // Atualize os TextEditingController com os valores recuperados
+            _nameController.text = userInfo.get('name') ?? '';
+            _addressController.text = userInfo.get('address') ?? '';
+            _cpfController.text = userInfo.get('cpf') ?? '';
+            _emailController.text = userInfo.get('email') ?? '';
+          });
+          if (kDebugMode) {
+            print('Informações do usuário recuperadas com sucesso.');
+            print('Nome: ${_nameController.text}');
+            print('Endereço: ${_addressController.text}');
+            print('CPF: ${_cpfController.text}');
+            print('Email: ${_emailController.text}');
+          }
+        } else {
+          if (kDebugMode) {
+            print('Documento não encontrado.');
+          }
+        }
+      } catch (error) {
+        if (kDebugMode) {
+          print('Erro ao recuperar dados do Firestore: $error');
+        }
+      }
+    } else {
+      if (kDebugMode) {
+        print('Usuário não autenticado.');
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     final cart = Provider.of<CartProvider>(context);
     final formatter = NumberFormat('#,##0.00', 'pt_BR');
-
     final totalAmount = cart.totalAmount;
 
     return Scaffold(
@@ -46,6 +112,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
                 TextFormField(
+                  controller: _nameController,
                   decoration: const InputDecoration(labelText: 'Nome Completo'),
                   onSaved: (value) {
                     _checkoutData['name'] = value ?? '';
@@ -58,6 +125,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                   },
                 ),
                 TextFormField(
+                  controller: _addressController,
                   decoration: const InputDecoration(labelText: 'Endereço'),
                   onSaved: (value) {
                     _checkoutData['address'] = value ?? '';
@@ -69,10 +137,37 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                     return null;
                   },
                 ),
+                TextFormField(
+                  controller: _cpfController,
+                  decoration: const InputDecoration(labelText: 'CPF'),
+                  onSaved: (value) {
+                    _checkoutData['cpf'] = value ?? '';
+                  },
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Por favor, insira seu cpf.';
+                    }
+                    return null;
+                  },
+                ),
+                TextFormField(
+                  controller: _emailController,
+                  decoration: const InputDecoration(labelText: 'Email'),
+                  onSaved: (value) {
+                    _checkoutData['email'] = value ?? '';
+                  },
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Por favor, insira seu email.';
+                    }
+                    return null;
+                  },
+                ),
                 DropdownButtonFormField<String>(
-                  decoration: const InputDecoration(labelText: 'Método de Pagamento'),
+                  decoration:
+                      const InputDecoration(labelText: 'Método de Pagamento'),
                   value: _paymentMethod,
-                  items: ['Dinheiro', 'Cartão', 'Pix', 'Boleto']
+                  items: ['Cartão', 'Pix']
                       .map((method) => DropdownMenuItem(
                             value: method,
                             child: Text(method),
@@ -81,6 +176,9 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                   onChanged: (value) {
                     setState(() {
                       _paymentMethod = value!;
+                      if (_paymentMethod == 'Pix') {
+                        _generatePixPayment(); // Gere o QR Code quando Pix for selecionado
+                      }
                     });
                   },
                   onSaved: (value) {
@@ -93,36 +191,45 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                     return null;
                   },
                 ),
-                if (_paymentMethod == 'Cartão')
-                  TextFormField(
-                    decoration: const InputDecoration(labelText: 'Número do Cartão'),
-                    onSaved: (value) {
-                      _checkoutData['cardNumber'] = value ?? '';
-                    },
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Por favor, insira o número do cartão.';
-                      }
-                      return null;
-                    },
-                  ),
-                if (_paymentMethod == 'Pix')
-                  TextFormField(
-                    decoration: const InputDecoration(labelText: 'Chave Pix'),
-                    onSaved: (value) {
-                      _checkoutData['pixKey'] = value ?? '';
-                    },
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Por favor, insira a chave Pix.';
-                      }
-                      return null;
-                    },
-                  ),
-                if (_paymentMethod == 'Boleto')
-                  const Text(
-                    'O boleto será gerado e enviado para o seu e-mail.',
-                    style: TextStyle(color: Colors.grey),
+                if (_paymentMethod == 'Pix' && _isPixGenerated)
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'Escaneie o QR Code abaixo ou utilize a chave Pix para realizar o pagamento:',
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                      Center(
+                        child: Column(
+                          children: [
+                            if (_isPixGenerated)
+                              Card(
+                                color: Colors.white,
+                                child: QrImageView(
+                                  data: _checkoutData['pixKey']!,
+                                  version: QrVersions.auto,
+                                  size: 200.0,
+                                ),
+                              ),
+                            const SizedBox(height: 10),
+                            ElevatedButton(
+                              onPressed: () {
+                                final pixKey = _checkoutData['pixKey'] ??
+                                    'Chave Pix não disponível';
+                                Clipboard.setData(
+                                  ClipboardData(text: pixKey),
+                                );
+                                Fluttertoast.showToast(
+                                  msg:
+                                      'Chave Pix copiada para a área de transferência.',
+                                );
+                              },
+                              child: const Text('Copiar Chave Pix'),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
                   ),
                 const SizedBox(height: 20),
                 Row(
@@ -141,8 +248,15 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                 const SizedBox(height: 20),
                 Center(
                   child: ElevatedButton(
-                    onPressed: _submitOrder,
-                    child: const Text('Finalizar Pedido'),
+                    onPressed: () {
+                      _submitOrder();
+                      if (_paymentMethod == 'Cartão') {
+                        final amountInCents = (totalAmount * 100).round();
+                        stripePaymentHandle
+                            .stripeMakePayment(amountInCents.toString());
+                      }
+                    },
+                    child:  Text(AppLocalizations.of(context)!.edit),
                   ),
                 ),
               ],
@@ -153,31 +267,112 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     );
   }
 
-  void _submitOrder() {
+  void _submitOrder() async {
     if (_formKey.currentState!.validate()) {
       _formKey.currentState!.save();
       final cart = Provider.of<CartProvider>(context, listen: false);
-
-      Provider.of<OrderProvider>(context, listen: false).addOrder(
-        Order(
-          id: DateTime.now().toString(),
-          customerName: _checkoutData['name']!,
-          address: _checkoutData['address']!,
-          paymentMethod: _checkoutData['payment']!,
-          amount: cart.totalAmount,
-          date: DateTime.now(),
-          items: cart.items,
-        ),
+      final order = shop.Order(
+        id: DateTime.now().toString(),
+        customerName: _checkoutData['name']!,
+        address: _checkoutData['address']!,
+        paymentMethod: _checkoutData['payment']!,
+        amount: cart.totalAmount,
+        date: DateTime.now(),
+        items: cart.items,
       );
 
-      cart.clear();
-      Navigator.of(context).popUntil((route) => route.settings.name == '/');
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Pedido realizado com sucesso!'),
-        ),
+      try {
+        if (kDebugMode) {
+          print('Enviando pedido: $order');
+        }
+
+        // Envia o pedido para o servidor
+        final response = await http.post(
+          Uri.parse('http://45.174.192.150:3000/api/orders'),
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: json.encode(order.toJson()),
+        );
+
+        if (kDebugMode) {
+          print(
+              'Resposta do servidor: ${response.statusCode} - ${response.body}');
+        }
+
+        if (response.statusCode == 201) {
+          // Adiciona o pedido ao Firestore
+          // ignore: use_build_context_synchronously
+          await Provider.of<shop.OrderProvider>(context, listen: false)
+              .addOrder(order);
+
+          cart.clear();
+          if (!mounted) return;
+          Navigator.of(context).popUntil((route) => route.settings.name == '/');
+          if (!mounted) return;
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Pedido realizado com sucesso!'),
+            ),
+          );
+        } else {
+          Fluttertoast.showToast(
+            msg:
+                'Erro ao realizar o pedido: ${response.statusCode} - ${response.body}',
+          );
+        }
+      } catch (error) {
+        Fluttertoast.showToast(
+          msg: 'Erro ao conectar ao servidor: $error',
+        );
+        if (kDebugMode) {
+          print('Erro ao conectar ao servidor: $error');
+        }
+      }
+    }
+  }
+
+  void _generatePixPayment() {
+    final cart = Provider.of<CartProvider>(context, listen: false);
+    final amount = cart.totalAmount.toString();
+    const pixKey = '07558844185';
+    const description = 'ShopTem';
+
+    final txid =
+        'TXID${DateTime.now().millisecondsSinceEpoch}'; // Gerar um txid único
+
+    PixFlutter pixFlutter = PixFlutter(
+      payload: Payload(
+        pixKey: pixKey,
+        description: description,
+        merchantName: 'Hendril Mendes',
+        merchantCity: 'Jauru-MT',
+        txid: txid, // ID único para a transação
+        amount: amount,
+      ),
+    );
+
+    try {
+      final qrCode = pixFlutter.getQRCode();
+      if (kDebugMode) {
+        print('QR Code: $qrCode');
+      } // Log para depuração
+
+      setState(() {
+        _isPixGenerated = true;
+        _checkoutData['pixKey'] = qrCode; // Armazenar a chave Pix
+      });
+
+      Fluttertoast.showToast(
+        msg: 'QR Code Pix gerado com sucesso!',
       );
-      Navigator.of(context).pushNamed('/order');
+    } catch (error) {
+      Fluttertoast.showToast(
+        msg: 'Erro ao gerar QR Code Pix: $error',
+      );
+      if (kDebugMode) {
+        print('Erro ao gerar QR Code Pix: $error');
+      } // Log para depuração
     }
   }
 }

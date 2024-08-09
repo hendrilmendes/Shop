@@ -1,6 +1,6 @@
-import 'dart:convert';
-import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart';
 import 'package:shop/widgets/items/cart_item.dart';
 
 class Order {
@@ -50,35 +50,142 @@ class Order {
 }
 
 class OrderProvider with ChangeNotifier {
-  final String userId;
+  final FirebaseAuth _auth = FirebaseAuth.instance;
   final List<Order> _orders = [];
-
-  OrderProvider(this.userId) {
-    _loadOrders();
-  }
 
   List<Order> get orders => [..._orders];
 
-  Future<void> addOrder(Order order) async {
-    _orders.add(order);
-    notifyListeners();
-    await _saveOrders();
+  OrderProvider() {
+    _loadOrders();
   }
 
-  Future<void> _saveOrders() async {
-    final prefs = await SharedPreferences.getInstance();
-    final List<Map<String, dynamic>> ordersJson =
-        _orders.map((order) => order.toJson()).toList();
-    prefs.setString('orders', json.encode(ordersJson));
+  Future<String?> _getUserId() async {
+    final user = _auth.currentUser;
+    final userId = user?.uid;
+    if (kDebugMode) {
+      print('Obtendo User ID: $userId');
+    }
+    return userId;
+  }
+
+  Future<void> addOrder(Order order) async {
+    final userId = await _getUserId();
+    if (userId == null) {
+      if (kDebugMode) {
+        print('User not authenticated');
+      }
+      return;
+    }
+
+    if (kDebugMode) {
+      print('User ID: $userId');
+    }
+
+    try {
+      await _createOrdersCollection();
+      await _createUserOrdersDocument(userId);
+
+      final userOrdersDoc = FirebaseFirestore.instance
+          .collection('orders')
+          .doc(userId)
+          .collection('userOrders');
+      await userOrdersDoc.add(order.toJson());
+
+      _orders.add(order);
+      notifyListeners();
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error adding order: $e');
+      }
+    }
   }
 
   Future<void> _loadOrders() async {
-    final prefs = await SharedPreferences.getInstance();
-    final ordersJson = prefs.getString('orders') ?? '[]';
-    final List<dynamic> ordersList = json.decode(ordersJson);
-    _orders.addAll(
-      ordersList.map((jsonOrder) => Order.fromJson(jsonOrder)).toList(),
-    );
-    notifyListeners();
+    final userId = await _getUserId();
+    if (userId == null) {
+      _orders.clear();
+      notifyListeners();
+      return;
+    }
+
+    final ordersCollection = FirebaseFirestore.instance.collection('orders');
+    try {
+      final ordersSnapshot =
+          await ordersCollection.doc(userId).collection('userOrders').get();
+
+      if (kDebugMode) {
+        print('Orders snapshot size: ${ordersSnapshot.size}');
+      }
+
+      if (ordersSnapshot.docs.isEmpty) {
+        _orders.clear();
+        notifyListeners();
+        return;
+      }
+
+      _orders.clear();
+      for (var doc in ordersSnapshot.docs) {
+        try {
+          _orders.add(Order.fromJson(doc.data()));
+        } catch (e) {
+          if (kDebugMode) {
+            print('Error parsing order data: $e');
+          }
+        }
+      }
+
+      notifyListeners();
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error loading orders: $e');
+      }
+    }
+  }
+
+  Future<void> _createOrdersCollection() async {
+    final ordersCollection = FirebaseFirestore.instance.collection('orders');
+
+    try {
+      final ordersSnapshot = await ordersCollection.get();
+
+      if (ordersSnapshot.docs.isEmpty) {
+        if (kDebugMode) {
+          print('Criando coleção "orders"');
+        }
+        // Adiciona um documento com dados iniciais para garantir que a coleção seja criada
+        await ordersCollection.doc('initial').set({'created': true});
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error creating orders collection: $e');
+      }
+    }
+  }
+
+  Future<void> _createUserOrdersDocument(String userId) async {
+    final userOrdersDoc = FirebaseFirestore.instance
+        .collection('orders')
+        .doc(userId)
+        .collection('userOrders');
+
+    try {
+      final userOrdersSnapshot = await userOrdersDoc.get();
+
+      if (userOrdersSnapshot.docs.isEmpty) {
+        if (kDebugMode) {
+          print('Criando documento "userOrders" para usuário $userId');
+        }
+        // Adiciona um documento com dados iniciais para garantir que a coleção seja criada
+        await userOrdersDoc.doc('initial').set({'created': true});
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error creating user orders document: $e');
+      }
+    }
+  }
+
+  Future<void> loadOrders() async {
+    await _loadOrders();
   }
 }

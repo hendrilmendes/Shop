@@ -1,23 +1,45 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
-import 'package:carousel_slider/carousel_slider.dart';
 import 'package:shop/models/product.dart';
 import 'package:shop/provider/products_provider.dart';
 import 'package:shop/provider/cart_provider.dart';
 import 'package:shop/provider/favorite_provider.dart';
 import 'package:intl/intl.dart';
+import 'package:shop/screens/image/image.dart';
 
-class ProductDetailScreen extends StatelessWidget {
+class ProductDetailScreen extends StatefulWidget {
   static const routeName = '/product-detail';
 
   const ProductDetailScreen({super.key});
 
   @override
+  // ignore: library_private_types_in_public_api
+  _ProductDetailScreenState createState() => _ProductDetailScreenState();
+}
+
+class _ProductDetailScreenState extends State<ProductDetailScreen> {
+  String? selectedColor;
+  String? selectedSize;
+  final int _currentIndex = 0;
+  late Product loadedProduct;
+
+  void _onImageTapped(int index) {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (ctx) => FullScreenImage(
+          imageUrls: loadedProduct.imageUrls,
+          initialIndex: _currentIndex,
+        ),
+      ),
+    );
+  }
+
+  @override
   Widget build(BuildContext context) {
     final productId = ModalRoute.of(context)!.settings.arguments as String;
-    final Product loadedProduct =
-        Provider.of<ProductProvider>(context, listen: false)
-            .findById(productId);
+    loadedProduct = Provider.of<ProductProvider>(context, listen: false)
+        .findById(productId);
 
     final favoritesProvider = Provider.of<FavoritesProvider>(context);
     final isFavorite = favoritesProvider.isFavorite(productId);
@@ -25,17 +47,12 @@ class ProductDetailScreen extends StatelessWidget {
     // Criar um formatador de número com vírgula como separador decimal
     final formatter = NumberFormat('#,##0.00', 'pt_BR');
     final formattedPrice = formatter.format(loadedProduct.price);
-
-    // Calcular o preço com desconto, se houver
-    final double discountedPrice;
-    discountedPrice =
+    final double discountedPrice =
         loadedProduct.price * (1 - (loadedProduct.discount / 100));
     final formattedDiscountedPrice = formatter.format(discountedPrice);
-
-    // Verifica se o frete é gratuito ou não e formata o valor do frete
-    final shippingCostText = loadedProduct.shippingCost == 0
-        ? 'Grátis'
-        : 'R\$ ${formatter.format(loadedProduct.shippingCost)}';
+    final double shippingCost = loadedProduct.shippingCost;
+    final shippingCostText =
+        shippingCost == 0 ? 'Grátis' : 'R\$ ${formatter.format(shippingCost)}';
 
     return Scaffold(
       appBar: AppBar(
@@ -50,17 +67,18 @@ class ProductDetailScreen extends StatelessWidget {
               if (isFavorite) {
                 favoritesProvider.removeFavorite(loadedProduct.id);
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Produto removido dos favoritos!'),
-                    duration: Duration(seconds: 2),
+                  SnackBar(
+                    content:
+                        Text(AppLocalizations.of(context)!.removeFavProduct),
+                    duration: const Duration(seconds: 2),
                   ),
                 );
               } else {
                 favoritesProvider.addFavorite(loadedProduct);
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Produto adicionado aos favoritos!'),
-                    duration: Duration(seconds: 2),
+                  SnackBar(
+                    content: Text(AppLocalizations.of(context)!.addFavProduct),
+                    duration: const Duration(seconds: 2),
                   ),
                 );
               }
@@ -72,66 +90,60 @@ class ProductDetailScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
-            // Carrossel de Imagens
-            CarouselSlider(
-              items: loadedProduct.imageUrls.map((imageUrl) {
-                return Builder(
-                  builder: (BuildContext context) {
-                    return Container(
-                      width: MediaQuery.of(context).size.width,
-                      margin: const EdgeInsets.symmetric(horizontal: 5.0),
-                      child: Image.network(
+            Center(
+              child: ConstrainedBox(
+                constraints: BoxConstraints(
+                  maxHeight: 250,
+                  maxWidth: MediaQuery.sizeOf(context).width - 10,
+                ),
+                child: CarouselView(
+                  itemExtent: 320,
+                  onTap: _onImageTapped,
+                  itemSnapping: true,
+                  children: loadedProduct.imageUrls.map((imageUrl) {
+                    return Image.network(
                         imageUrl,
                         fit: BoxFit.cover,
-                      ),
+                        width: double.infinity,
+                      
                     );
-                  },
-                );
-              }).toList(),
-              options: CarouselOptions(
-                height: 300,
-                enlargeCenterPage: true,
-                autoPlay: true,
-                aspectRatio: 16 / 9,
-                autoPlayCurve: Curves.fastOutSlowIn,
-                enableInfiniteScroll: true,
-                autoPlayAnimationDuration: const Duration(milliseconds: 800),
-                viewportFraction: 0.8,
+                  }).toList(),
+                ),
               ),
             ),
             const SizedBox(height: 10),
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 10),
+              padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Text(
                 loadedProduct.title,
                 style: const TextStyle(
-                  fontSize: 24,
+                  fontSize: 26,
                   fontWeight: FontWeight.bold,
                 ),
               ),
             ),
             const SizedBox(height: 10),
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 10),
+              padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  // Mostrar preço original riscado, se houver desconto
                   if (loadedProduct.discount > 0)
                     Text(
                       'R\$ $formattedPrice',
                       style: const TextStyle(
-                        fontSize: 20,
+                        fontSize: 18,
                         color: Colors.grey,
                         decoration: TextDecoration.lineThrough,
                       ),
                     ),
                   const SizedBox(width: 10),
-                  // Mostrar preço com desconto, se houver
                   Text(
                     'R\$ $formattedDiscountedPrice',
                     style: const TextStyle(
                       color: Colors.green,
-                      fontSize: 20,
+                      fontSize: 22,
+                      fontWeight: FontWeight.bold,
                     ),
                   ),
                 ],
@@ -139,7 +151,7 @@ class ProductDetailScreen extends StatelessWidget {
             ),
             const SizedBox(height: 10),
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 10),
+              padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Text(
                 loadedProduct.description,
                 style: const TextStyle(
@@ -149,15 +161,26 @@ class ProductDetailScreen extends StatelessWidget {
             ),
             const SizedBox(height: 10),
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 10),
+              padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Row(
                 children: [
                   const Icon(Icons.color_lens),
                   const SizedBox(width: 10),
-                  Text(
-                    'Cores disponíveis: ${loadedProduct.colors.join(', ')}',
-                    style: const TextStyle(
-                      fontSize: 16,
+                  Expanded(
+                    child: Wrap(
+                      spacing: 8.0,
+                      runSpacing: 8.0,
+                      children: loadedProduct.colors.map((color) {
+                        return ChoiceChip(
+                          label: Text(color),
+                          selected: selectedColor == color,
+                          onSelected: (selected) {
+                            setState(() {
+                              selectedColor = selected ? color : null;
+                            });
+                          },
+                        );
+                      }).toList(),
                     ),
                   ),
                 ],
@@ -165,15 +188,27 @@ class ProductDetailScreen extends StatelessWidget {
             ),
             const SizedBox(height: 10),
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 10),
+              padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const Icon(Icons.straighten),
                   const SizedBox(width: 10),
-                  Text(
-                    'Tamanhos disponíveis: ${loadedProduct.sizes.join(', ')}',
-                    style: const TextStyle(
-                      fontSize: 16,
+                  Expanded(
+                    child: Wrap(
+                      spacing: 8.0,
+                      runSpacing: 8.0,
+                      children: loadedProduct.sizes.map((size) {
+                        return ChoiceChip(
+                          label: Text(size),
+                          selected: selectedSize == size,
+                          onSelected: (selected) {
+                            setState(() {
+                              selectedSize = selected ? size : null;
+                            });
+                          },
+                        );
+                      }).toList(),
                     ),
                   ),
                 ],
@@ -181,7 +216,7 @@ class ProductDetailScreen extends StatelessWidget {
             ),
             const SizedBox(height: 10),
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 10),
+              padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Row(
                 children: [
                   const Icon(Icons.local_shipping),
@@ -197,11 +232,11 @@ class ProductDetailScreen extends StatelessWidget {
             ),
             const SizedBox(height: 20),
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+              padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Text(
                 'Código do Produto: $productId',
                 style: const TextStyle(
-                  fontSize: 12,
+                  fontSize: 14,
                   color: Colors.grey,
                 ),
               ),
@@ -212,20 +247,40 @@ class ProductDetailScreen extends StatelessWidget {
       floatingActionButton: FloatingActionButton(
         child: const Icon(Icons.shopping_cart),
         onPressed: () {
-          Provider.of<CartProvider>(context, listen: false).addItem(
-            loadedProduct.id,
-            loadedProduct.title,
-            loadedProduct.price,
-            loadedProduct.imageUrls.isNotEmpty
-                ? loadedProduct.imageUrls[0]
-                : '',
-          );
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Produto adicionado ao carrinho!'),
-              duration: Duration(seconds: 2),
-            ),
-          );
+          if (loadedProduct.isOutOfStock) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(AppLocalizations.of(context)!.outOfStockSub),
+                duration: const Duration(seconds: 2),
+              ),
+            );
+          } else if (selectedColor == null || selectedSize == null) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(AppLocalizations.of(context)!.addCartSub),
+                duration: const Duration(seconds: 2),
+              ),
+            );
+          } else {
+            final double finalPrice = discountedPrice + shippingCost;
+
+            Provider.of<CartProvider>(context, listen: false).addItem(
+              loadedProduct.id,
+              loadedProduct.title,
+              finalPrice,
+              loadedProduct.imageUrls.isNotEmpty
+                  ? loadedProduct.imageUrls[0]
+                  : '',
+              selectedColor!,
+              selectedSize!,
+            );
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(AppLocalizations.of(context)!.addCart),
+                duration: const Duration(seconds: 2),
+              ),
+            );
+          }
         },
       ),
     );

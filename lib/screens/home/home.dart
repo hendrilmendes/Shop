@@ -57,7 +57,7 @@ class _HomeScreenState extends State<HomeScreen> {
       appBar: AppBar(
         title: Text(AppLocalizations.of(context)!.appName),
         bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(110.0),
+          preferredSize: const Size.fromHeight(120.0),
           child: Column(
             children: [
               Card(
@@ -133,6 +133,15 @@ class _HomeScreenState extends State<HomeScreen> {
                         _selectedCategory == 'Todos' ||
                         prod.category == _selectedCategory)
                     .toList();
+
+                if (products.isEmpty) {
+                  return Center(
+                    child: Text(
+                      AppLocalizations.of(context)!.noProduct,
+                      style: const TextStyle(fontSize: 18),
+                    ),
+                  );
+                }
 
                 return GridView.builder(
                   padding: const EdgeInsets.all(10.0),

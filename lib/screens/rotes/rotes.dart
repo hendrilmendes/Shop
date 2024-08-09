@@ -28,11 +28,11 @@ class _MainScreenState extends State<MainScreen> {
     return Scaffold(
       body: IndexedStack(
         index: _currentIndex,
-        children: const <Widget>[
-          HomeScreen(),
-          OrdersScreen(),
-          CartScreen(),
-          FavoritesScreen(),
+        children:  <Widget>[
+          const HomeScreen(),
+          const OrdersScreen(),
+          const CartScreen(),
+          const FavoritesScreen(),
           SettingsScreen(),
         ],
       ),

@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "203280960742",
+    "project_id": "shop-706d7",
+    "storage_bucket": "shop-706d7.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:203280960742:android:3ff7da4337870a86ac7f27",
+        "android_client_info": {
+          "package_name": "com.github.hendrilmendes.shop"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDMqUOSE524Q8FdlGMetIXXT6PpARlmFy8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -45,17 +45,17 @@ class _AboutPageState extends State<AboutPage> {
                   const SizedBox(
                     height: 20,
                   ),
-                  // const Card(
-                  //   elevation: 15,
-                  //   shape: CircleBorder(),
-                  //   clipBehavior: Clip.antiAlias,
-                  //   child: SizedBox(
-                  //     width: 80,
-                  //     child: Image(
-                  //       image: AssetImage('assets/img/ic_launcher.png'),
-                  //     ),
-                  //   ),
-                  // ),
+                  const Card(
+                    elevation: 15,
+                    shape: CircleBorder(),
+                    clipBehavior: Clip.antiAlias,
+                    child: SizedBox(
+                      width: 80,
+                      child: Image(
+                        image: AssetImage('assets/img/ic_launcher.png'),
+                      ),
+                    ),
+                  ),
                   const SizedBox(height: 20),
                   Center(
                     child: Text(

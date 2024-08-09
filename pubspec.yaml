@@ -2,10 +2,10 @@ name: shop
 description: "A new Flutter project."
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 
-version: 1.0.3-alpha+4
+version: 1.0.6-alpha+7
 
 environment:
-  sdk: '>=3.4.3 <4.0.0'
+  sdk: '>=3.5.0 <4.0.0'
 
 
 dependencies:
@@ -14,9 +14,6 @@ dependencies:
 
 # Cached Network
   cached_network_image: ^3.3.1
-
-# Carousel Slider
-  carousel_slider: ^4.2.1
 
 # Connectivity Plus
   connectivity_plus: ^6.0.3
@@ -29,7 +26,7 @@ dependencies:
   hive_flutter: ^1.1.0
 
 # HTTP
-  http: ^1.2.1
+  http: ^1.2.2
 
 # Intl
   intl: ^0.19.0
@@ -41,23 +38,42 @@ dependencies:
         path: feedback
         ref: master
 
+# Firebase
+  cloud_firestore: ^5.0.2
+  firebase_auth: ^5.1.2
+  firebase_core: ^3.2.0
+  firebase_crashlytics: ^4.0.3
+  firebase_performance: ^0.10.0+3 
+
+# Google Sign
+  google_sign_in: ^6.2.1
+  
 # Package Info
   package_info_plus: ^8.0.0
 
 # Path Provider
   path_provider: ^2.1.3
 
+# Pix 
+  pix_flutter: ^2.2.0
+  
 # Provider
   provider: ^6.1.2  
 
 # Review  
   in_app_review: ^2.0.9
   
+# QR Code
+  qr_flutter: ^4.1.0
+
 # Shared Preferences
   shared_preferences: ^2.2.3
 
 # Shimer
   shimmer: ^3.0.0
+
+# Stripe
+  flutter_stripe: ^11.0.0
 
 # Toast
   fluttertoast: ^8.2.6
