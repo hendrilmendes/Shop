@@ -4,7 +4,7 @@ Um app para uma loja de roupas
 
 ### Screenshots
 
-<img src="screenshots/preview.png?raw=true" width="32%"> <img src="screenshots/preview2.png?raw=true" width="32%"> <img src="screenshots/preview3.png?raw=true" width="32%"> <img src="screenshots/preview4.png?raw=true" width="32%">  <img src="screenshots/preview5.png?raw=true" width="32%">  <img src="screenshots/preview6.png?raw=true" width="32%">
+<img src="screenshots/preview.jpeg?raw=true" width="32%"> <img src="screenshots/preview2.jpeg?raw=true" width="32%"> <img src="screenshots/preview3.jpeg?raw=true" width="32%"> <img src="screenshots/preview4.jpeg?raw=true" width="32%">  <img src="screenshots/preview5.jpeg?raw=true" width="32%">  <img src="screenshots/preview6.jpeg?raw=true" width="32%">
 
 ##
 
