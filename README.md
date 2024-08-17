@@ -1,6 +1,6 @@
 # Shop
 
-Um app apra uma loja de roupas
+Um app para uma loja de roupas
 
 ### Screenshots
 
