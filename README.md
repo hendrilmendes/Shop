@@ -17,12 +17,10 @@ Um app para uma loja de roupas
 
 * App feito em Flutter, disponível para iOS e Android
 * Firebase para monitorar o desempenho, erros do app e autenticação
-* Onesignal para envio de notificações
-* Salvar Postagens
-* Comentar em Posts
-* Leitor de Texto
-* Modo Escuro
-* API Blogger v3
+* Compras por PIX ou CArtão
+* Carrinho de Compras
+* Favoritos
+* Histórico de Compras
 ##
 
 ### O que há de novo?
