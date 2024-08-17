@@ -51,6 +51,10 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
+  Future<void> _refresh() async {
+    await _fetchData();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -119,50 +123,54 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ),
       ),
-      body: _isLoading
-          ? const Center(
-              child: CircularProgressIndicator.adaptive(),
-            )
-          : Consumer<ProductProvider>(
-              builder: (ctx, productsData, _) {
-                final products = productsData.products
-                    .where((prod) => prod.title
-                        .toLowerCase()
-                        .contains(_searchQuery.toLowerCase()))
-                    .where((prod) =>
-                        _selectedCategory == 'Todos' ||
-                        prod.category == _selectedCategory)
-                    .toList();
+      body: RefreshIndicator(
+        onRefresh: _refresh,
+        child: _isLoading
+            ? const Center(
+                child: CircularProgressIndicator.adaptive(),
+              )
+            : Consumer<ProductProvider>(
+                builder: (ctx, productsData, _) {
+                  final products = productsData.products
+                      .where((prod) => prod.title
+                          .toLowerCase()
+                          .contains(_searchQuery.toLowerCase()))
+                      .where((prod) =>
+                          _selectedCategory == 'Todos' ||
+                          prod.category == _selectedCategory)
+                      .toList();
 
-                if (products.isEmpty) {
-                  return Center(
-                    child: Text(
-                      AppLocalizations.of(context)!.noProduct,
-                      style: const TextStyle(fontSize: 18),
+                  if (products.isEmpty) {
+                    return Center(
+                      child: Text(
+                        AppLocalizations.of(context)!.noProduct,
+                        style: const TextStyle(fontSize: 18),
+                      ),
+                    );
+                  }
+
+                  return GridView.builder(
+                    padding: const EdgeInsets.all(10.0),
+                    itemCount: products.length,
+                    itemBuilder: (ctx, i) => ProductItem(
+                      id: products[i].id,
+                      title: products[i].title,
+                      imageUrls: products[i].imageUrls,
+                      price: products[i].price,
+                      isOutOfStock: products[i].isOutOfStock,
+                      discount: products[i].discount,
+                    ),
+                    gridDelegate:
+                        const SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 2,
+                      childAspectRatio: 2 / 3,
+                      crossAxisSpacing: 20,
+                      mainAxisSpacing: 20,
                     ),
                   );
-                }
-
-                return GridView.builder(
-                  padding: const EdgeInsets.all(10.0),
-                  itemCount: products.length,
-                  itemBuilder: (ctx, i) => ProductItem(
-                    id: products[i].id,
-                    title: products[i].title,
-                    imageUrls: products[i].imageUrls,
-                    price: products[i].price,
-                    isOutOfStock: products[i].isOutOfStock,
-                    discount: products[i].discount,
-                  ),
-                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 2,
-                    childAspectRatio: 2 / 3,
-                    crossAxisSpacing: 20,
-                    mainAxisSpacing: 20,
-                  ),
-                );
-              },
-            ),
+                },
+              ),
+      ),
     );
   }
 }

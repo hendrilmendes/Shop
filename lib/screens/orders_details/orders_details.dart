@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:intl/intl.dart';
 import 'package:shop/provider/order_provider.dart';
 
@@ -16,7 +17,7 @@ class OrderDetailScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Detalhes do Pedido'),
+        title: Text(AppLocalizations.of(context)!.detailsProduct),
       ),
       body: Padding(
         padding: const EdgeInsets.all(10),

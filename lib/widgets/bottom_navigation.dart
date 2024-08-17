@@ -34,7 +34,7 @@ class BottomNavigationContainer extends StatelessWidget {
         ),
         BottomNavigationBarItem(
           icon: const Icon(Icons.favorite),
-          label: AppLocalizations.of(context)!.favorites,
+          label: AppLocalizations.of(context)!.favorite,
         ),
         BottomNavigationBarItem(
           icon: const Icon(Icons.settings),

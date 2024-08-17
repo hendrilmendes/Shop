@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import 'package:shop/provider/order_provider.dart';
@@ -13,15 +14,19 @@ class OrdersScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Minhas Compras'),
+        title: Text(AppLocalizations.of(context)!.myOrders),
       ),
       body: FutureBuilder(
         future: Provider.of<OrderProvider>(context, listen: false).loadOrders(),
         builder: (ctx, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
+            return const Center(
+              child: CircularProgressIndicator.adaptive(),
+            );
           } else if (snapshot.hasError) {
-            return const Center(child: Text('Erro ao carregar pedidos.'));
+            return Center(
+              child: Text(AppLocalizations.of(context)!.errorOrders),
+            );
           } else {
             return Consumer<OrderProvider>(
               builder: (ctx, orderProvider, child) {
@@ -32,10 +37,10 @@ class OrdersScreen extends StatelessWidget {
                 );
 
                 return orders.isEmpty
-                    ? const Center(
+                    ? Center(
                         child: Text(
-                          'Nenhuma compra realizada ainda',
-                          style: TextStyle(fontSize: 18),
+                          AppLocalizations.of(context)!.noOrders,
+                          style: const TextStyle(fontSize: 18),
                         ),
                       )
                     : ListView.builder(
@@ -68,9 +73,15 @@ class OrdersScreen extends StatelessWidget {
                                       color: Colors.grey,
                                     ),
                                   ),
-                                  trailing: Chip(
-                                    label: Text(
-                                        currencyFormat.format(order.amount)),
+                                  trailing: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Chip(
+                                        label: Text(
+                                          currencyFormat.format(order.amount),
+                                        ),
+                                      ),
+                                    ],
                                   ),
                                   onTap: () {
                                     Navigator.of(context).push(

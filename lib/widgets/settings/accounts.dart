@@ -13,6 +13,9 @@ class AccountUser extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
+      onLongPressStart: (_) {
+        Feedback.forLongPress(context);
+      },
       onTap: () {
         Navigator.of(context).push(
           MaterialPageRoute(

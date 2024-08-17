@@ -20,7 +20,7 @@ class CartScreen extends StatelessWidget {
       body: Consumer<CartProvider>(
         builder: (ctx, cart, child) {
           if (cart.isLoading) {
-            return const Center(child: CircularProgressIndicator());
+            return const Center(child: CircularProgressIndicator.adaptive());
           }
 
           if (cart.items.isEmpty) {

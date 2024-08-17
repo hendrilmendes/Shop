@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:shop/provider/favorite_provider.dart';
 import 'package:shop/screens/product_details/product_details.dart';
@@ -11,6 +12,7 @@ class FavoritesScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final favoritesProvider = Provider.of<FavoritesProvider>(context);
+    final numberFormat = NumberFormat.simpleCurrency(locale: 'pt_BR');
 
     return Scaffold(
       appBar: AppBar(
@@ -53,7 +55,7 @@ class FavoritesScreen extends StatelessWidget {
                       style: const TextStyle(fontWeight: FontWeight.bold),
                     ),
                     subtitle: Text(
-                      'R\$ ${favoriteItem.price.toStringAsFixed(2)}',
+                      numberFormat.format(favoriteItem.price),
                       style: const TextStyle(color: Colors.green),
                     ),
                     trailing: IconButton(

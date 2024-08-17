@@ -34,6 +34,9 @@ class ProductItem extends StatelessWidget {
     final formattedDiscountedPrice = formatter.format(discountedPrice);
 
     return GestureDetector(
+      onLongPressStart: (_) {
+        Feedback.forLongPress(context);
+      },
       onTap: () {
         Navigator.of(context).pushNamed(
           '/product-detail',
@@ -88,7 +91,7 @@ class ProductItem extends StatelessWidget {
                     padding:
                         const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                     color: Colors.red,
-                    child:  Text(
+                    child: Text(
                       AppLocalizations.of(context)!.outOfStock,
                       style: const TextStyle(
                         color: Colors.white,

@@ -41,7 +41,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     'pixKey': '',
   };
 
-  String _paymentMethod = 'Cartão'; // Padrao
+  String _paymentMethod = '';
   final stripePaymentHandle = StripePaymentHandle();
   final User? user = FirebaseAuth.instance.currentUser;
 
@@ -101,7 +101,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Finalizar Compra'),
+        title: Text(AppLocalizations.of(context)!.buyOrders),
       ),
       body: Padding(
         padding: const EdgeInsets.all(10),
@@ -247,7 +247,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                 ),
                 const SizedBox(height: 20),
                 Center(
-                  child: ElevatedButton(
+                  child: FilledButton(
                     onPressed: () {
                       _submitOrder();
                       if (_paymentMethod == 'Cartão') {
@@ -256,7 +256,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                             .stripeMakePayment(amountInCents.toString());
                       }
                     },
-                    child:  Text(AppLocalizations.of(context)!.edit),
+                    child: Text(AppLocalizations.of(context)!.buyOrderSub),
                   ),
                 ),
               ],
@@ -270,6 +270,16 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
   void _submitOrder() async {
     if (_formKey.currentState!.validate()) {
       _formKey.currentState!.save();
+
+      // Verifique se a forma de pagamento foi selecionada
+      if (_checkoutData['payment'] == null ||
+          _checkoutData['payment']!.isEmpty) {
+        Fluttertoast.showToast(
+          msg: 'Por favor, selecione uma forma de pagamento.',
+        );
+        return; // Não envia o pedido se a forma de pagamento não estiver selecionada
+      }
+
       final cart = Provider.of<CartProvider>(context, listen: false);
       final order = shop.Order(
         id: DateTime.now().toString(),
