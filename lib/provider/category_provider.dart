@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:shop/api/api.dart';
 
 class CategoryProvider with ChangeNotifier {
   List<String> _categories = ['Todos']; // Inclua 'Todos' como categoria padrão
@@ -10,14 +11,12 @@ class CategoryProvider with ChangeNotifier {
   }
 
   Future<void> fetchCategories() async {
-    const url =
-        'http://45.174.192.150:3000/api/categories'; // Substitua pelo seu IP local
     try {
-      final response = await http.get(Uri.parse(url));
+      final response = await http.get(Uri.parse('$apiUrl/api/categories'));
       if (response.statusCode == 200) {
-        final List<dynamic> extractedData = json.decode(response.body);
+         final List<dynamic> categoriesJson = json.decode(response.body);
         _categories = ['Todos'] +
-            extractedData.cast<String>(); // Adicione 'Todos' no início da lista
+            categoriesJson.cast<String>(); // Adicione 'Todos' no início da lista
         notifyListeners();
       } else {
         throw Exception('Failed to load categories');

@@ -1,6 +1,7 @@
 import 'dart:convert';
-import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
+import 'package:shop/api/api.dart';
 import 'package:shop/models/product.dart';
 
 class ProductProvider with ChangeNotifier {
@@ -11,17 +12,34 @@ class ProductProvider with ChangeNotifier {
   }
 
   Future<void> fetchProducts() async {
-    const url = 'http://45.174.192.150:3000/api/products';
+    const url = '$apiUrl/api/products';
     try {
-      final response = await http.get(Uri.parse(url));
-      final extractedData = json.decode(response.body) as List<dynamic>;
-      final List<Product> loadedProducts = [];
-      for (var productData in extractedData) {
-        loadedProducts.add(Product.fromJson(productData));
+      if (kDebugMode) {
+        print('Fetching products from: $url');
       }
-      _products = loadedProducts;
-      notifyListeners();
+      final response = await http.get(Uri.parse(url));
+
+      if (response.statusCode == 200) {
+        final extractedData = json.decode(response.body) as List<dynamic>;
+        final List<Product> loadedProducts = [];
+
+        for (var productData in extractedData) {
+          final product = Product.fromJson(productData);
+          if (kDebugMode) {
+            print('Product object: $product'); // Log do objeto Produto
+          }
+          loadedProducts.add(product);
+        }
+
+        _products = loadedProducts;
+        notifyListeners();
+      } else {
+        throw Exception('Failed to load products');
+      }
     } catch (error) {
+      if (kDebugMode) {
+        print('Error fetching products: $error');
+      }
       rethrow;
     }
   }

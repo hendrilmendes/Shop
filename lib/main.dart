@@ -35,6 +35,7 @@ Future<void> main() async {
   await Hive.initFlutter();
   await Hive.openBox<Map<String, dynamic>>('favoritesbox');
 
+  // Strip Pagment
   Stripe.publishableKey =
       'pk_test_51PhgcYRrdJeN8anlmmWdatIlC2hvlaCCgNpSlq1Xi5D2mLxhmHRX5WEDdbogI466W5UIT3Y7j17EaIf2zgiGUmbh009EK7XbDu';
 

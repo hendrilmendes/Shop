@@ -9,6 +9,7 @@ import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
 import 'package:pix_flutter/pix_flutter.dart';
 import 'package:provider/provider.dart';
+import 'package:shop/api/api.dart';
 import 'package:shop/provider/cart_provider.dart';
 import 'package:shop/provider/order_provider.dart' as shop;
 import 'package:shop/provider/stripe_provider.dart';
@@ -298,7 +299,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
 
         // Envia o pedido para o servidor
         final response = await http.post(
-          Uri.parse('http://45.174.192.150:3000/api/orders'),
+          Uri.parse('$apiUrl/api/orders'),
           headers: {
             'Content-Type': 'application/json',
           },
