@@ -2,7 +2,7 @@ name: shop
 description: "Sua loja"
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 
-version: 1.0.8+10
+version: 1.0.10+12
 
 environment:
   sdk: '>=3.5.0 <4.0.0'
@@ -38,7 +38,7 @@ dependencies:
         ref: master
 
 # Firebase
-  cloud_firestore: ^5.0.2
+  cloud_firestore: ^5.4.4
   firebase_auth: ^5.1.2
   firebase_core: ^3.2.0
   firebase_crashlytics: ^4.0.3
@@ -86,7 +86,7 @@ dependencies:
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  flutter_lints: ^4.0.0
+  flutter_lints: ^5.0.0
 
 
 flutter:

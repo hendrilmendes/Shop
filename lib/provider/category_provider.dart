@@ -1,5 +1,5 @@
 import 'dart:convert';
-import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:shop/api/api.dart';
 
@@ -14,14 +14,21 @@ class CategoryProvider with ChangeNotifier {
     try {
       final response = await http.get(Uri.parse('$apiUrl/api/categories'));
       if (response.statusCode == 200) {
-         final List<dynamic> categoriesJson = json.decode(response.body);
+        final List<dynamic> categoriesJson = json.decode(response.body);
+
         _categories = ['Todos'] +
-            categoriesJson.cast<String>(); // Adicione 'Todos' no início da lista
+            categoriesJson.map((category) {
+              return category['name'].toString();
+            }).toList();
+
         notifyListeners();
       } else {
         throw Exception('Failed to load categories');
       }
     } catch (error) {
+      if (kDebugMode) {
+        print('Erro ao carregar categorias: $error');
+      }
       rethrow;
     }
   }

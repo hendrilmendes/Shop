@@ -36,15 +36,17 @@ class Order {
 
   factory Order.fromJson(Map<String, dynamic> json) {
     return Order(
-      id: json['id'],
-      customerName: json['customerName'],
-      address: json['address'],
-      paymentMethod: json['paymentMethod'],
-      amount: json['amount'],
-      date: DateTime.parse(json['date']),
-      items: (json['items'] as List)
-          .map((item) => CartItem.fromJson(item))
-          .toList(),
+      id: json['id']?.toString() ?? '',
+      customerName: json['customerName']?.toString() ??
+          '', // Handle null for customerName
+      address: json['address']?.toString() ?? '',
+      paymentMethod: json['paymentMethod']?.toString() ?? '',
+      amount: (json['amount'] as num?)?.toDouble() ?? 0.0,
+      date: DateTime.tryParse(json['date']?.toString() ?? '') ?? DateTime.now(),
+      items: (json['items'] as List<dynamic>?)
+              ?.map((item) => CartItem.fromJson(item as Map<String, dynamic>))
+              .toList() ??
+          [],
     );
   }
 }
