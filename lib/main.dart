@@ -24,6 +24,7 @@ import 'package:shop/screens/product_details/product_details.dart';
 import 'package:shop/screens/rotes/rotes.dart';
 import 'package:shop/screens/settings/settings.dart';
 import 'package:shop/theme/theme.dart';
+import 'package:shop/updater/updater.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -105,26 +106,7 @@ class MyApp extends StatelessWidget {
           debugShowCheckedModeBanner: false,
           localizationsDelegates: AppLocalizations.localizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
-          home: FutureBuilder(
-            future: authService.currentUser(),
-            builder: (context, AsyncSnapshot<User?> snapshot) {
-              if (snapshot.connectionState == ConnectionState.done) {
-                if (snapshot.hasData) {
-                  return const MainScreen();
-                } else {
-                  return LoginScreen(
-                    authService: authService,
-                  );
-                }
-              } else {
-                return const Scaffold(
-                  body: Center(
-                    child: CircularProgressIndicator.adaptive(),
-                  ),
-                );
-              }
-            },
-          ),
+          home: _buildHome(authService),
           routes: {
             '/order': (ctx) => const OrdersScreen(),
             '/cart': (ctx) => const CartScreen(),
@@ -138,4 +120,26 @@ class MyApp extends StatelessWidget {
       }),
     );
   }
+}
+
+Widget _buildHome(AuthService authService) {
+  return FutureBuilder<User?>(
+    future: authService.currentUser(),
+    builder: (context, snapshot) {
+      if (snapshot.connectionState == ConnectionState.done) {
+        if (snapshot.hasData) {
+          Updater.checkUpdateApp(context);
+          return const MainScreen();
+        } else {
+          return LoginScreen(authService: authService);
+        }
+      } else {
+        return const Scaffold(
+          body: Center(
+            child: CircularProgressIndicator.adaptive(),
+          ),
+        );
+      }
+    },
+  );
 }

@@ -17,7 +17,11 @@ class OrderDetailScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(AppLocalizations.of(context)!.detailsProduct),
+        title: Text(
+          AppLocalizations.of(context)!.detailsProduct,
+          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+        ),
+        centerTitle: true,
       ),
       body: Padding(
         padding: const EdgeInsets.all(10),
@@ -75,7 +79,7 @@ class OrderDetailScreen extends StatelessWidget {
                   final item = order.items[index];
                   return Card(
                     margin: const EdgeInsets.symmetric(vertical: 5),
-                    elevation: 5,
+                    elevation: 4,
                     child: ListTile(
                       leading: CircleAvatar(
                         backgroundImage: NetworkImage(item.imageUrl),

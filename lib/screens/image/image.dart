@@ -88,7 +88,7 @@ class _FullScreenImageState extends State<FullScreenImage> {
                       boxShadow: [
                         if (index == _currentPage)
                           BoxShadow(
-                            color: Colors.blueAccent.withOpacity(0.5),
+                            color: Colors.blueAccent.withValues(),
                             blurRadius: 10,
                             spreadRadius: 2,
                           ),

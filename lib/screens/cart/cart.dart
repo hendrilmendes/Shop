@@ -15,7 +15,11 @@ class CartScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title:  Text(AppLocalizations.of(context)!.cart),
+        title: Text(
+          AppLocalizations.of(context)!.cart,
+          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+        ),
+        centerTitle: true,
       ),
       body: Consumer<CartProvider>(
         builder: (ctx, cart, child) {
@@ -24,7 +28,7 @@ class CartScreen extends StatelessWidget {
           }
 
           if (cart.items.isEmpty) {
-            return  Center(
+            return Center(
               child: Text(
                 AppLocalizations.of(context)!.noProductCart,
                 style: const TextStyle(fontSize: 18),
@@ -126,7 +130,7 @@ class CartScreen extends StatelessWidget {
                         backgroundColor: Theme.of(context).primaryColor,
                       ),
                       TextButton(
-                        child:  Text(AppLocalizations.of(context)!.buy),
+                        child: Text(AppLocalizations.of(context)!.buy),
                         onPressed: () {
                           Navigator.of(context)
                               .pushNamed(CheckoutScreen.routeName);

@@ -2,10 +2,10 @@ name: shop
 description: "Sua loja"
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 
-version: 1.0.10+12
+version: 1.1.0+110
 
 environment:
-  sdk: '>=3.5.0 <4.0.0'
+  sdk: ^3.6.0
 
 dependencies:
   flutter:
@@ -35,7 +35,7 @@ dependencies:
       git:
         url: https://github.com/hendrilmendes/feedback.git
         path: feedback
-        ref: master
+        ref: 5b2c7ae
 
 # Firebase
   cloud_firestore: ^5.4.4
@@ -75,7 +75,7 @@ dependencies:
   flutter_stripe: ^11.0.0
 
 # Toast
-  fluttertoast: ^8.2.6
+  fluttertoast: ^8.2.10
 
 # Url Launcher
   url_launcher: ^6.3.0

@@ -1,17 +1,18 @@
 Changelog Shop
 
 ======================================================
-## [1.0.10]
+## [1.1.0]
 
 ## Alterações
 
-### Correções
-
-- 
-
 ### Features
 
-- 
+- Novo menu de configurações
+
+### Correções
+
+- Ajustes visuais
+- Correções de bugs
 
 ======================================================
 ## [1.0.8]

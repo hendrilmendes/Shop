@@ -16,7 +16,11 @@ class FavoritesScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(AppLocalizations.of(context)!.favorite),
+        title: Text(
+          AppLocalizations.of(context)!.favorite,
+          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+        ),
+        centerTitle: true,
       ),
       body: favoritesProvider.favorites.isEmpty
           ? Center(
@@ -31,7 +35,7 @@ class FavoritesScreen extends StatelessWidget {
               itemBuilder: (ctx, index) {
                 final favoriteItem = favoritesProvider.favorites[index];
                 return Card(
-                  elevation: 5,
+                  elevation: 4,
                   margin: const EdgeInsets.symmetric(vertical: 8.0),
                   clipBehavior: Clip.antiAlias,
                   child: ListTile(

@@ -42,7 +42,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     'pixKey': '',
   };
 
-  String _paymentMethod = '';
+  String? _paymentMethod;
   final stripePaymentHandle = StripePaymentHandle();
   final User? user = FirebaseAuth.instance.currentUser;
 
@@ -102,7 +102,11 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(AppLocalizations.of(context)!.buyOrders),
+        title: Text(
+          AppLocalizations.of(context)!.buyOrders,
+          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+        ),
+        centerTitle: true,
       ),
       body: Padding(
         padding: const EdgeInsets.all(10),
@@ -311,7 +315,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
               'Resposta do servidor: ${response.statusCode} - ${response.body}');
         }
 
-        if (response.statusCode == 201) {
+        if (response.statusCode == 200 || response.statusCode == 201) {
           // Adiciona o pedido ao Firestore
           // ignore: use_build_context_synchronously
           await Provider.of<shop.OrderProvider>(context, listen: false)

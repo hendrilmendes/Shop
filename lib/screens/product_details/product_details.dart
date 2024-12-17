@@ -56,7 +56,6 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(loadedProduct.title),
         actions: [
           IconButton(
             icon: Icon(
@@ -102,10 +101,9 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                   itemSnapping: true,
                   children: loadedProduct.imageUrls.map((imageUrl) {
                     return Image.network(
-                        imageUrl,
-                        fit: BoxFit.cover,
-                        width: double.infinity,
-                      
+                      imageUrl,
+                      fit: BoxFit.cover,
+                      width: double.infinity,
                     );
                   }).toList(),
                 ),
@@ -241,6 +239,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                 ),
               ),
             ),
+            const SizedBox(height: 30),
           ],
         ),
       ),

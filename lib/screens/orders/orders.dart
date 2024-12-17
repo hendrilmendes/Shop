@@ -14,7 +14,11 @@ class OrdersScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(AppLocalizations.of(context)!.myOrders),
+        title: Text(
+          AppLocalizations.of(context)!.myOrders,
+          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+        ),
+        centerTitle: true,
       ),
       body: FutureBuilder(
         future: Provider.of<OrderProvider>(context, listen: false).loadOrders(),
@@ -35,6 +39,9 @@ class OrdersScreen extends StatelessWidget {
                   locale: 'pt_BR',
                   symbol: 'R\$',
                 );
+
+                // Ordena os pedidos em ordem decrescente por data
+                orders.sort((a, b) => b.date.compareTo(a.date));
 
                 return orders.isEmpty
                     ? Center(
