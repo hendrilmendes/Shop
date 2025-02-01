@@ -12,7 +12,7 @@ dependencies:
     sdk: flutter
 
 # Cached Network
-  cached_network_image: ^3.4.0
+  cached_network_image: ^3.4.1
 
 # Connectivity Plus
   connectivity_plus: ^6.0.3
