@@ -204,7 +204,7 @@ abstract class AppLocalizations {
   /// No description provided for @noResult.
   ///
   /// In pt, this message translates to:
-  /// **'Nenhum resultado encontrado 😱'**
+  /// **'Nenhum resultado encontrado'**
   String get noResult;
 
   /// No description provided for @about.
@@ -408,7 +408,7 @@ abstract class AppLocalizations {
   /// No description provided for @homeLogin.
   ///
   /// In pt, this message translates to:
-  /// **'Bem vindo ao nosso app, aproveite 😁'**
+  /// **'Bem vindo ao nosso app, aproveite'**
   String get homeLogin;
 
   /// No description provided for @googleLogin.

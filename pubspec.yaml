@@ -2,10 +2,10 @@ name: shop
 description: "Sua loja"
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 
-version: 1.1.0+110
+version: 1.1.1+111
 
 environment:
-  sdk: ^3.6.0
+  sdk: ^3.7.0
 
 dependencies:
   flutter:
@@ -18,7 +18,7 @@ dependencies:
   connectivity_plus: ^6.0.3
 
 # Email
-  flutter_email_sender: ^6.0.3
+  flutter_email_sender: ^7.0.0
 
 # Hive  
   hive: ^2.2.3
@@ -38,17 +38,18 @@ dependencies:
         ref: 5b2c7ae
 
 # Firebase
-  cloud_firestore: ^5.4.4
-  firebase_auth: ^5.1.2
-  firebase_core: ^3.2.0
-  firebase_crashlytics: ^4.0.3
-  firebase_performance: ^0.10.0+3 
+  cloud_firestore: ^5.6.5
+  firebase_auth: ^5.5.1
+  firebase_core: ^3.12.1
+  firebase_crashlytics: ^4.3.4
+  firebase_performance: ^0.10.1+4
 
 # Google Sign
-  google_sign_in: ^6.2.1
+  google_fonts: ^6.2.1
+  google_sign_in: ^6.3.0
   
 # Package Info
-  package_info_plus: ^8.0.0
+  package_info_plus: ^8.3.0
 
 # Path Provider
   path_provider: ^2.1.3
@@ -57,7 +58,7 @@ dependencies:
   pix_flutter: ^2.2.0
   
 # Provider
-  provider: ^6.1.2  
+  provider: ^6.1.4
 
 # Review  
   in_app_review: ^2.0.9
@@ -66,7 +67,7 @@ dependencies:
   qr_flutter: ^4.1.0
 
 # Shared Preferences
-  shared_preferences: ^2.2.3
+  shared_preferences: ^2.5.3
 
 # Shimer
   shimmer: ^3.0.0
@@ -96,8 +97,4 @@ flutter:
   assets:
    - assets/img/
 
-  fonts:
-    - family: OpenSans
-      fonts:
-        - asset: assets/fonts/OpenSans.ttf
 

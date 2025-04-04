@@ -1,0 +1,2 @@
+/home/hendril/Documentos/GitHub/Shop/android/app/.cxx/RelWithDebInfo/6ak484p3/armeabi-v7a/CMakeFiles/edit_cache.dir
+/home/hendril/Documentos/GitHub/Shop/android/app/.cxx/RelWithDebInfo/6ak484p3/armeabi-v7a/CMakeFiles/rebuild_cache.dir

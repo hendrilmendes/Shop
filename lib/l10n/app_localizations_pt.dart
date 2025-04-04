@@ -63,7 +63,7 @@ class AppLocalizationsPt extends AppLocalizations {
   String get noConnectionSub => 'Verifique se você realmente e um humano';
 
   @override
-  String get noResult => 'Nenhum resultado encontrado 😱';
+  String get noResult => 'Nenhum resultado encontrado';
 
   @override
   String get about => 'Sobre';
@@ -165,7 +165,7 @@ class AppLocalizationsPt extends AppLocalizations {
   String get top => 'Destaque';
 
   @override
-  String get homeLogin => 'Bem vindo ao nosso app, aproveite 😁';
+  String get homeLogin => 'Bem vindo ao nosso app, aproveite';
 
   @override
   String get googleLogin => 'Entrar com Google';

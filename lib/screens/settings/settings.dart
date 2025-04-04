@@ -1,6 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:shop/l10n/app_localizations.dart';
 import 'package:shop/theme/theme.dart';
 import 'package:shop/widgets/settings/about.dart';
 import 'package:shop/widgets/settings/accounts.dart';
@@ -52,6 +52,13 @@ class SettingsScreen extends StatelessWidget {
                 buildUpdateSettings(context),
                 buildReviewSettings(context),
                 buildSupportSettings(context),
+              ],
+            ),
+          ),
+          _buildSectionCard(
+            context,
+            Column(
+              children: [
                 buildAboutSettings(context),
               ],
             ),

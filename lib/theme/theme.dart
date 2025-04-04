@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 enum ThemeModeType { light, dark, system }
@@ -56,12 +57,12 @@ class ThemeModel extends ChangeNotifier {
     return ThemeData(
       useMaterial3: true,
       scaffoldBackgroundColor: Colors.white,
-      textTheme: Typography().black.apply(fontFamily: 'OpenSans'),
-      appBarTheme: const AppBarTheme(
+      textTheme: Typography().black.apply(fontFamily: GoogleFonts.openSans().fontFamily),
+      appBarTheme: AppBarTheme(
         backgroundColor: Colors.white70,
-        iconTheme: IconThemeData(color: Colors.black),
+        iconTheme: const IconThemeData(color: Colors.black),
         titleTextStyle: TextStyle(
-            color: Colors.black, fontFamily: 'OpenSans', fontSize: 24),
+            color: Colors.black, fontFamily: GoogleFonts.openSans().fontFamily, fontSize: 24),
       ),
       bottomAppBarTheme: const BottomAppBarTheme(color: Colors.white),
       iconTheme: const IconThemeData(color: Colors.black),
@@ -101,12 +102,12 @@ class ThemeModel extends ChangeNotifier {
       useMaterial3: true,
       colorScheme: const ColorScheme.dark(),
       scaffoldBackgroundColor: Colors.black,
-      textTheme: Typography().white.apply(fontFamily: 'OpenSans'),
-      appBarTheme: const AppBarTheme(
+      textTheme: Typography().white.apply(fontFamily: GoogleFonts.openSans().fontFamily),
+      appBarTheme: AppBarTheme(
         backgroundColor: Colors.black87,
-        iconTheme: IconThemeData(color: Colors.white),
+        iconTheme: const IconThemeData(color: Colors.white),
         titleTextStyle: TextStyle(
-            color: Colors.white, fontFamily: 'OpenSans', fontSize: 24),
+            color: Colors.white, fontFamily: GoogleFonts.openSans().fontFamily, fontSize: 24),
       ),
       bottomAppBarTheme: const BottomAppBarTheme(color: Colors.black),
       iconTheme: const IconThemeData(color: Colors.white),

@@ -2,7 +2,7 @@ import 'package:feedback/feedback.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:shop/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_stripe/flutter_stripe.dart';
@@ -122,24 +122,22 @@ class MyApp extends StatelessWidget {
   }
 }
 
-Widget _buildHome(AuthService authService) {
-  return FutureBuilder<User?>(
-    future: authService.currentUser(),
-    builder: (context, snapshot) {
-      if (snapshot.connectionState == ConnectionState.done) {
-        if (snapshot.hasData) {
+ Widget _buildHome(AuthService authService) {
+    return FutureBuilder<User?>(
+      future: authService.currentUser(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.done) {
           Updater.checkUpdateApp(context);
-          return const MainScreen();
+          if (snapshot.hasData) {
+             return const MainScreen();
+          } else {
+            return LoginScreen(authService: authService);
+          }
         } else {
-          return LoginScreen(authService: authService);
+          return const Scaffold(
+            body: Center(child: CircularProgressIndicator.adaptive()),
+          );
         }
-      } else {
-        return const Scaffold(
-          body: Center(
-            child: CircularProgressIndicator.adaptive(),
-          ),
-        );
-      }
-    },
-  );
-}
+      },
+    );
+  }

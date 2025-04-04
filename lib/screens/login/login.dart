@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:shop/l10n/app_localizations.dart';
 import 'package:shop/auth/auth.dart';
 import 'package:shop/screens/rotes/rotes.dart';
 
